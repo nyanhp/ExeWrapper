@@ -42,7 +42,7 @@
 
     # Create a temporary script file
     $temp = [System.IO.Path]::GetTempFileName() -replace "\.tmp", ".cs"
-    "
+@"
 using System;
 using System.Management.Automation;
 namespace POSHRocks
@@ -52,15 +52,15 @@ namespace POSHRocks
         public static void Main(string[] args)
         {
             PowerShell ps = PowerShell.Create();
-            ps.Commands.AddScript(`"$scriptContent`");
+            ps.Commands.AddScript("$scriptContent");
             ps.Invoke();
         }
     }
 }
-" | Out-File $temp
+"@ | Out-File $temp
 
     # Locate default compiler for .NET runtime
-    $compiler = Join-Path -Path ([Runtime.InteropServices.RuntimeEnvironment]::GetRuntimeDirectory() ) -ChildPath csc.exe
+    $compiler = Join-Path -Path ([Runtime.InteropServices.RuntimeEnvironment]::GetRuntimeDirectory() ) -ChildPath csc.exe
 
     # Compile the exe
     $arguments = @(
