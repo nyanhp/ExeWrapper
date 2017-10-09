@@ -8,4 +8,8 @@ The small script at the moment only contains one function which could be dot-sou
 Save-CompiledScript -ScriptPath D:\BlogTester.ps1 -ExePath D:\blog.exe
 ```  
 It returns a System.IO.FileInfo object retaining the executable that has just been created.  
+In order to include additional dependencies the switch parameter IncludeFolderContents will include everything except the script itself in the resulting binary file.  
+```powershell
+Save-CompiledScript -ScriptPath D:\BlogTester.ps1 -ExePath D:\blog.exe -IncludeFolderContents
+```
 In the future this small script might grow. Since you probably would want to wrap more than a single script into an exe file, I will update it periodically to do more stuff.
