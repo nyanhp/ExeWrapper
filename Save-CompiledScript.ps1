@@ -37,7 +37,10 @@
         $ExePath,
 
         [switch]
-        $IncludeFolderContents
+        $IncludeFolderContents,
+
+        [System.Threading.ApartmentState]
+        $ApartmentState = 'STA'
     )
 
     # Get script content at runtime, replace special characters that confuse .NET
@@ -54,7 +57,7 @@
     Write-Verbose -Message "Using temporary file $temp for source code"
 
 
-@"
+Add-Type -TypeDefinition @"
 using System;
 using System.Management.Automation;
 namespace POSHRocks
@@ -64,6 +67,8 @@ namespace POSHRocks
         public static void Main(string[] args)
         {
             ExtractResources();
+            var state = System.Management.Automation.Runspaces.InitialSessionState.CreateDefault();
+            state.ApartmentState = System.Threading.ApartmentState.$ApartmentState;
             PowerShell ps = PowerShell.Create();
             ps.Commands.AddScript("$scriptContent");
             ps.Invoke();
@@ -92,52 +97,7 @@ namespace POSHRocks
         }
     }
 }
-"@ | Out-File $temp
+"@ -OutputAssembly $ExePath
 
-    # Locate default compiler for .NET runtime
-    $compiler = Join-Path -Path ([Runtime.InteropServices.RuntimeEnvironment]::GetRuntimeDirectory() ) -ChildPath csc.exe
-
-    if (-not $compiler)
-    {
-        throw ".NET compiler for C# (csc.exe) could not be found."
-    }
-
-    write-Verbose -Message "Located the compiler at $compiler"
-
-    # Compile the exe
-    $arguments = @(
-        "/target:exe"
-        "/out:$ExePath"
-        "/r:`"$([psobject].Assembly.Location)`""
-        $temp
-    )
-
-    if ($referencedFiles)
-    {
-        foreach ($file in $referencedFiles)
-        {
-            $arguments += "/res:`"$($file.FullName)`",POSHRocks.$($file.Name),Public"
-        }
-    }
-
-    Write-Verbose -Message "Compiling with the following arguments:`r`n$($arguments -join ' ')"
-    $compilation = Start-Process -FilePath $compiler -ArgumentList $arguments -Wait -NoNewWindow -PassThru
-
-    # $? always returns true/false depending on the last action on the command line. Useful for external tools.
-    if ($compilation.ExitCode)
-    {
-        Write-Error "Error compiling $ScriptPath" -ErrorAction Stop
-    }
-
-    # Remove the temporary file
-    Remove-Item $temp -Force
-
-    $exeFile = Get-Item -Path $ExePath -ErrorAction SilentlyContinue
-
-    if (-not $exeFile)
-    {
-        Write-Error -Message "$ExePath could not be found" -ErrorAction Stop
-    }
-
-    return $exeFile
+    Get-Item $ExePath -ErrorAction SilentlyContinue
 }
