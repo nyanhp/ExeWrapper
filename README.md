@@ -13,3 +13,8 @@ In order to include additional dependencies the switch parameter IncludeFolderCo
 Save-CompiledScript -ScriptPath D:\BlogTester.ps1 -ExePath D:\blog.exe -IncludeFolderContents
 ```
 In the future this small script might grow. Since you probably would want to wrap more than a single script into an exe file, I will update it periodically to do more stuff.
+
+## Updates
+- 2018-09-14
+  - Script has been streamlined to make use of Add-Type built-in functionality.
+  - You can now select a ThreadApartmentState. We default to STA. Options are STA,MTA and Unknown.
