@@ -71,7 +71,15 @@ namespace POSHRocks
             state.ApartmentState = System.Threading.ApartmentState.$ApartmentState;
             PowerShell ps = PowerShell.Create();
             ps.Commands.AddScript("$scriptContent");
-            ps.Invoke();
+            var results = ps.Invoke();
+
+            foreach(var obj in results)
+            {
+                Console.WriteLine(obj.ToString());
+            }
+
+            Console.WriteLine("Press any key to exit.");
+            Console.ReadKey();
         }
 
         public static void ExtractResources()
